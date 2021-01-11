@@ -18,7 +18,6 @@ public:
     int lastResultCode();
 
 private:
-    int (*execCallback)(void*,int,char**,char**);
     sqlite3* m_db;
     sqlite3_stmt* m_currentStatement;
     int m_lastResultCode;
@@ -28,11 +27,11 @@ private:
 class Column
 {
 public:
-    const int INTEGER;
-    const int FLOAT;
-    const int TEXT;
-    const int BLOB;
-    const int Null;
+    static const int INTEGER;
+    static const int FLOAT;
+    static const int TEXT;
+    static const int BLOB;
+    static const int Null;
 
     Column(const std::any& value);
     Column();
@@ -49,11 +48,11 @@ private:
 class Record
 {
 public:
-    const std::any& getColumn(int index);
-    void setColumn(int index, const std::any& value);
+    Column getColumn(int index) const;
+    void setColumn(int index, const Column& value);
 
 private:
-    bool checkIndex(int index);
+    bool checkIndex(int index) const;
 
 private:
     std::vector<Column> m_columns;

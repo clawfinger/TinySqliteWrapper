@@ -64,16 +64,17 @@ int DBAdapter::lastResultCode()
     return m_lastResultCode;
 }
 
-Column::Column(const std::any& value) : Column()
+const int Column::INTEGER = SQLITE_INTEGER;
+const int Column::FLOAT = SQLITE_FLOAT;
+const int Column::TEXT = SQLITE_TEXT;
+const int Column::BLOB = SQLITE_BLOB;
+const int Column::Null = SQLITE_NULL;
+
+Column::Column(const std::any& value) : m_value(value)
 {
-    m_value = value;
 }
 
-Column::Column(): INTEGER(SQLITE_INTEGER),
-                  FLOAT(SQLITE_FLOAT),
-                  TEXT(SQLITE_TEXT),
-                  BLOB(SQLITE_BLOB),
-                  Null(SQLITE_NULL)
+Column::Column()
 {
     m_type = Null;
 }
@@ -98,7 +99,26 @@ void Column::setType(int type)
     m_type = type;
 }
 
-const std::any& Record::getColumn(int index)
+Column Record::getColumn(int index) const
 {
+    if (!checkIndex(index))
+        return {};
 
+    return m_columns[index];
+}
+
+void Record::setColumn(int index, const Column& value)
+{
+    if (!checkIndex(index))
+        return;
+
+    m_columns[index] = value;
+}
+
+bool Record::checkIndex(int index) const
+{
+    if ((index < 0) || (index >= m_columns.size()))
+        return false;
+
+    return true;
 }
