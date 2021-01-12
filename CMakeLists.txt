@@ -7,11 +7,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SOURCES
     main.cpp
-    DBAdapter.cpp)
+    DBAdapter.cpp
+    Record.cpp
+    )
 
 set(HEADERS
     sqlite/sqlite3.h
-    DBAdapter.h)
+    DBAdapter.h
+    Record.h
+    )
 
 add_executable(${PROJECT} ${SOURCES} ${HEADERS})
 target_link_libraries(${PROJECT} ${PROJECT_SOURCE_DIR}/sqlite/sqlite3.lib)

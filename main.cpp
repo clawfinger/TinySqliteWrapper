@@ -6,5 +6,6 @@ int main()
     DBAdapter db;
     if (!db.open("test.db"))
         return -1;
-    db.execute("SELECT * FROM worktime");
+    std::vector<Record> rec = db.execute("SELECT * FROM worktime;");
+    return 0;
 }

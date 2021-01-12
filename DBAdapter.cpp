@@ -33,92 +33,65 @@ void DBAdapter::close()
     sqlite3_close(m_db);
 }
 
-int DBAdapter::execute(const std::string& query)
+std::vector<Record> DBAdapter::execute(const std::string& query)
 {
-
-
     m_lastResultCode = sqlite3_prepare_v2(m_db, query.c_str(), query.size(), &m_currentStatement, NULL);
 
     if(m_lastResultCode != SQLITE_OK)
     {
        std::cout << "SQL prepare error" << std::endl;
-       return m_lastResultCode;
+       sqlite3_reset(m_currentStatement);
+       return {};
     }
     else
     {
        std::cout << "SQL prepare OK" << std::endl;
     }
 
-    while(sqlite3_step(m_currentStatement) != SQLITE_DONE)
+    std::vector<Record> result;
+    int columnCount = sqlite3_column_count(m_currentStatement);
+    while(true)
     {
-        int         id   = sqlite3_column_int(m_currentStatement, 0);
-        const unsigned char* name = sqlite3_column_text(m_currentStatement, 1);
-        std::cout << "ID: " << id << " (type: " << sqlite3_column_type(m_currentStatement, 0) << ") " <<
-                     "Name: " << name << " (type: " << sqlite3_column_type(m_currentStatement, 1) << ") " << std::endl;
+        int returnCode = sqlite3_step(m_currentStatement);
+        if (returnCode == SQLITE_ROW)
+        {
+            Record record;
+            for (int i = 0; i < columnCount; ++i)
+            {
+                int type = sqlite3_column_type(m_currentStatement, i);
+                Column current;
+                switch (type)
+                {
+                    case SQLITE_INTEGER:
+                        current.setValue(sqlite3_column_int(m_currentStatement, i));
+                        break;
+                    case SQLITE_TEXT:
+                        current.setValue(sqlite3_column_text(m_currentStatement, i));
+                        break;
+                    case SQLITE_FLOAT:
+                        current.setValue(sqlite3_column_double(m_currentStatement, i));
+                        break;
+                    case SQLITE_BLOB:
+                        current.setValue(sqlite3_column_blob(m_currentStatement, i));
+                        break;
+                }
+                current.setType(type);
+                current.setName(sqlite3_column_name(m_currentStatement, i));
+                record.appendColumn(current);
+            }
+            result.push_back(record);
+        }
+        else if (returnCode == SQLITE_DONE)
+        {
+            sqlite3_reset(m_currentStatement);
+            return result;
+        }
     }
-    return m_lastResultCode;
+    sqlite3_reset(m_currentStatement);
+    return result;
 }
 
 int DBAdapter::lastResultCode()
 {
     return m_lastResultCode;
-}
-
-const int Column::INTEGER = SQLITE_INTEGER;
-const int Column::FLOAT = SQLITE_FLOAT;
-const int Column::TEXT = SQLITE_TEXT;
-const int Column::BLOB = SQLITE_BLOB;
-const int Column::Null = SQLITE_NULL;
-
-Column::Column(const std::any& value) : m_value(value)
-{
-}
-
-Column::Column()
-{
-    m_type = Null;
-}
-
-std::any& Column::getValue()
-{
-    return m_value;
-}
-
-void Column::setValue(const std::any& value)
-{
-    m_value = value;
-}
-
-int Column::getType() const
-{
-    return m_type;
-}
-
-void Column::setType(int type)
-{
-    m_type = type;
-}
-
-Column Record::getColumn(int index) const
-{
-    if (!checkIndex(index))
-        return {};
-
-    return m_columns[index];
-}
-
-void Record::setColumn(int index, const Column& value)
-{
-    if (!checkIndex(index))
-        return;
-
-    m_columns[index] = value;
-}
-
-bool Record::checkIndex(int index) const
-{
-    if ((index < 0) || (index >= m_columns.size()))
-        return false;
-
-    return true;
 }
