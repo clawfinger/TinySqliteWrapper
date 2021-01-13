@@ -16,5 +16,5 @@ set(HEADERS
     Record.h
     )
 
-add_executable(${PROJECT} ${SOURCES} ${HEADERS})
+add_library(${PROJECT} ${SOURCES} ${HEADERS})
 target_link_libraries(${PROJECT} ${PROJECT_SOURCE_DIR}/sqlite/sqlite3.lib)
