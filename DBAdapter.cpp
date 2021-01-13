@@ -1,5 +1,6 @@
 #include "DBAdapter.h"
 #include "sqlite/sqlite3.h"
+#include <experimental/filesystem>
 #include <iostream>
 
 DBAdapter::DBAdapter(const std::string& dbPath)
@@ -14,6 +15,12 @@ DBAdapter::~DBAdapter()
 
 bool DBAdapter::open(const std::string& dbPath)
 {
+    if (!std::experimental::filesystem::exists(dbPath))
+    {
+        std::cout << "Database file not exist" << std::endl;
+        return false;
+    }
+
     m_lastResultCode = sqlite3_open(dbPath.c_str(), &m_db);
 
     if(m_lastResultCode != SQLITE_OK)
