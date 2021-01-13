@@ -64,18 +64,21 @@ std::vector<Record> DBAdapter::execute(const std::string& query)
                 {
                     case SQLITE_INTEGER:
                         current.setValue(sqlite3_column_int(m_currentStatement, i));
+                        current.setType(Column::Type::INTEGER);
                         break;
                     case SQLITE_TEXT:
                         current.setValue(sqlite3_column_text(m_currentStatement, i));
+                        current.setType(Column::Type::TEXT);
                         break;
                     case SQLITE_FLOAT:
                         current.setValue(sqlite3_column_double(m_currentStatement, i));
+                        current.setType(Column::Type::FLOAT);
                         break;
                     case SQLITE_BLOB:
                         current.setValue(sqlite3_column_blob(m_currentStatement, i));
+                        current.setType(Column::Type::BLOB);
                         break;
                 }
-                current.setType(type);
                 current.setName(sqlite3_column_name(m_currentStatement, i));
                 record.appendColumn(current);
             }
