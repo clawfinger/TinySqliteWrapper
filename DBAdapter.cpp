@@ -1,5 +1,6 @@
 #include "DBAdapter.h"
 #include "sqlite/sqlite3.h"
+#include <experimental/filesystem>
 #include <iostream>
 
 DBAdapter::DBAdapter(const std::string& dbPath)
@@ -14,6 +15,12 @@ DBAdapter::~DBAdapter()
 
 bool DBAdapter::open(const std::string& dbPath)
 {
+//    if (!std::experimental::filesystem::exists(dbPath))
+//    {
+//        std::cout << "Database file not exist" << std::endl;
+//        return false;
+//    }
+
     m_lastResultCode = sqlite3_open(dbPath.c_str(), &m_db);
 
     if(m_lastResultCode != SQLITE_OK)
@@ -83,11 +90,15 @@ std::vector<Record> DBAdapter::execute(const std::string& query)
                 record.appendColumn(current);
             }
             result.push_back(record);
+        }        
+        else if (returnCode == SQLITE_BUSY)
+        {
+            std::cout << "SQL base is busy. Query was not executed!" << std::endl;
+            break;
         }
         else if (returnCode == SQLITE_DONE)
         {
-            sqlite3_reset(m_currentStatement);
-            return result;
+            break;
         }
     }
     sqlite3_reset(m_currentStatement);
