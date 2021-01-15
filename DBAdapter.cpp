@@ -74,7 +74,7 @@ std::vector<Record> DBAdapter::execute(const std::string& query)
                         current.setType(Column::Type::INTEGER);
                         break;
                     case SQLITE_TEXT:
-                        current.setValue(sqlite3_column_text(m_currentStatement, i));
+                        current.setValue(std::string(reinterpret_cast<const char*>(sqlite3_column_text(m_currentStatement, i))));
                         current.setType(Column::Type::TEXT);
                         break;
                     case SQLITE_FLOAT:
